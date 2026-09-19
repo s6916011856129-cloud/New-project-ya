@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบสารสนเทศรายงานผลงานบุคคล | มณีกรานต์ บุญจง</title>
+
+  <!-- Google Fonts: Sarabun -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sarabun: ['Sarabun', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#F0FDF4',
+              100: '#DCFCE7',
+              primary: '#3BB489',
+              pastel: '#76C58C',
+              dark: '#26A69A',
+              lime: '#AED581',
+              yellow: '#FFCA28',
+              orange: '#FF8A65',
+              red: '#EF5350',
+              purple: '#4A2C6D',
+              crimson: '#D32F2F',
+              deeporange: '#F57C00',
+              gold: '#FBC02D',
+              blue: '#0288D1',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="assets/css/custom.css">
+</head>
+<body class="bg-slate-50 font-sarabun text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- ========================================================================
+       1. SPLASH SCREEN (WITH BACKGROUND DECORATION)
+       ======================================================================== -->
+  <div id="splash-screen">
+    <!-- Abstract Pastel Background Shapes -->
+    <div class="splash-bg-shape shape-1"></div>
+    <div class="splash-bg-shape shape-2"></div>
+    <div class="splash-bg-shape shape-3"></div>
+    <div class="shape-grid"></div>
+
+    <!-- Centered Welcoming Card -->
+    <div class="relative z-10 max-w-md w-11/12 p-8 bg-white/85 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/60 text-center flex flex-col items-center">
+      <!-- Profile Picture Glow Frame -->
+      <div class="relative mb-5">
+        <div class="absolute -inset-1 rounded-full bg-gradient-to-r from-[#3BB489] via-[#76C58C] to-[#0288D1] opacity-75 blur-sm animate-pulse"></div>
+        <img src="assets/images/avatar.jpg" alt="มณีกรานต์ บุญจง" class="relative w-28 h-28 rounded-full object-cover border-4 border-white shadow-md">
+      </div>
+
+      <div class="inline-flex items-center px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[#3BB489] text-xs font-semibold mb-2">
+        <span class="w-2 h-2 rounded-full bg-[#3BB489] animate-ping mr-2"></span>
+        ระบบสารสนเทศรายงานผลงานบุคคล
+      </div>
+
+      <h1 class="text-2xl font-extrabold text-slate-800 mb-1">มณีกรานต์ บุญจง</h1>
+      <p class="text-xs text-[#26A69A] font-semibold mb-4">
+        มหาวิทยาลัยเทคโนโลยีราชมงคลธัญบุรี (RMUTT)
+      </p>
+
+      <!-- Progress bar -->
+      <div class="w-full mt-2">
+        <div class="splash-progress-bar">
+          <div id="splash-progress-fill" class="splash-progress-fill"></div>
+        </div>
+        <div class="flex justify-between items-center mt-2 text-[11px] text-slate-400">
+          <span id="splash-status-text">กำลังโหลดข้อมูลส่วนบุคคลและผลงาน...</span>
+          <i class="fas fa-circle-notch fa-spin text-[#3BB489]"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       GLOBAL LOADING SPINNER (ทุกกระบวนการทำงาน)
+       ======================================================================== -->
+  <div id="global-spinner">
+    <div class="bg-white/90 backdrop-blur-md px-8 py-6 rounded-2xl shadow-xl border border-slate-100 flex flex-col items-center">
+      <div class="spinner-ring mb-3"></div>
+      <p class="text-xs font-bold text-slate-700 tracking-wide">กำลังประมวลผลข้อมูล...</p>
+      <p class="text-[10px] text-slate-400 mt-0.5">กรุณารอสักครู่</p>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       TOP HEADER BAR (RESPONSIVE)
+       ======================================================================== -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <!-- Left: Brand / Mobile Toggle -->
+      <div class="flex items-center space-x-3">
+        <button id="mobile-menu-toggle" class="lg:hidden p-2 rounded-xl hover:bg-slate-100 text-slate-600 focus:outline-none">
+          <i class="fas fa-bars text-lg"></i>
+        </button>
+        <div class="flex items-center space-x-2.5 cursor-pointer" data-tab="dashboard">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#3BB489] to-[#76C58C] flex items-center justify-center text-white font-bold shadow-md shadow-emerald-500/20">
+            <i class="fas fa-user-graduate text-base"></i>
+          </div>
+          <div>
+            <span class="block text-base font-bold text-slate-800 leading-tight">มณีกรานต์ บุญจง</span>
+            <span class="block text-[11px] text-[#26A69A] font-medium">รายงานผลงานบุคคล & Portfolio</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Actions: View Resume, Print, Status -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <button class="open-resume-modal inline-flex items-center px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all text-xs font-semibold">
+          <i class="far fa-file-image mr-1.5 text-[#3BB489]"></i>
+          <span class="hidden sm:inline">ดูเรซูเม่ต้นฉบับ</span>
+          <span class="sm:hidden">เรซูเม่</span>
+        </button>
+
+        <button onclick="window.print()" class="inline-flex items-center px-3 py-1.5 rounded-xl bg-emerald-50 text-[#3BB489] hover:bg-[#3BB489] hover:text-white transition-all text-xs font-semibold border border-emerald-200">
+          <i class="fas fa-print mr-1.5"></i>
+          <span class="hidden sm:inline">พิมพ์รายงาน</span>
+        </button>
+
+        <div class="h-8 w-px bg-slate-200 hidden sm:block"></div>
+
+        <!-- Profile Chip -->
+        <div class="flex items-center space-x-2 pl-1 cursor-pointer" data-tab="contact">
+          <img src="assets/images/avatar.jpg" alt="Avatar" class="w-9 h-9 rounded-full object-cover border-2 border-[#3BB489]">
+          <div class="hidden md:block text-left text-xs">
+            <span class="block font-bold text-slate-700">มณีกรานต์ (ครีม)</span>
+            <span class="block text-[10px] text-emerald-600 font-medium">พร้อมรับโอกาสงาน</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       MAIN APP CONTAINER (SIDEBAR + CONTENT)
+       ======================================================================== -->
+  <div class="flex-1 flex max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 gap-6 relative">
+
+    <!-- Backdrop for Mobile Sidebar -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/30 backdrop-blur-xs z-40 hidden lg:hidden"></div>
+
+    <!-- ====================================================================
+         SIDEBAR NAVIGATION (DESKTOP + MOBILE DRAWER)
+         ==================================================================== -->
+    <aside id="sidebar" class="fixed lg:static top-0 left-0 h-full lg:h-auto w-72 bg-white lg:bg-transparent z-50 lg:z-0 p-5 lg:p-0 border-r lg:border-r-0 border-slate-200 shadow-2xl lg:shadow-none -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col justify-between flex-shrink-0 no-print">
+      
+      <!-- Top Section -->
+      <div>
+        <!-- Profile Mini Card (Sidebar) -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm mb-5 text-center relative overflow-hidden">
+          <div class="absolute top-0 left-0 right-0 h-16 bg-gradient-to-r from-[#3BB489] via-[#76C58C] to-[#26A69A]"></div>
+          
+          <div class="relative pt-6">
+            <img src="assets/images/avatar.jpg" alt="Maneekran" class="w-20 h-20 rounded-full mx-auto object-cover border-4 border-white shadow-md mb-3">
+            <h2 class="text-base font-bold text-slate-800">มณีกรานต์ บุญจง</h2>
+            <p class="text-xs text-[#26A69A] font-semibold mb-1">Maneekran Boonjong</p>
+            <p class="text-[11px] text-slate-500 leading-tight mb-3">สาขาบริหารธุรกิจระหว่างประเทศ มทร.ธัญบุรี</p>
+            
+            <div class="flex items-center justify-center gap-1.5 flex-wrap">
+              <span class="badge-mint px-2 py-0.5 rounded-full text-[10px] font-semibold">อายุ 22 ปี</span>
+              <span class="badge-blue px-2 py-0.5 rounded-full text-[10px] font-semibold">Gifted Sci-Math</span>
+              <span class="badge-purple px-2 py-0.5 rounded-full text-[10px] font-semibold">GXU China</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Menus (All 7 Required Menus) -->
+        <nav class="space-y-1 bg-white p-2.5 rounded-2xl border border-slate-100 shadow-sm">
+          <div class="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            เมนูหลัก (Navigation)
+          </div>
+
+          <!-- 7. Dashboard -->
+          <button data-tab="dashboard" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 text-xs text-left font-medium">
+            <i class="fas fa-chart-pie w-5 text-center text-[#3BB489]"></i>
+            <span>Dashboard รายงานผลงาน</span>
+          </button>
+
+          <!-- 1. ประวัติการศึกษา -->
+          <button data-tab="edu" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 text-xs text-left font-medium">
+            <i class="fas fa-graduation-cap w-5 text-center text-[#0288D1]"></i>
+            <span>1. ประวัติการศึกษา</span>
+          </button>
+
+          <!-- 2. สถานที่ติดต่อ -->
+          <button data-tab="contact" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 text-xs text-left font-medium">
+            <i class="fas fa-map-marker-alt w-5 text-center text-[#EF5350]"></i>
+            <span>2. สถานที่ติดต่อ</span>
+          </button>
+
+          <!-- 3. ผลงานโดดเด่น -->
+          <button data-tab="achievements" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 text-xs text-left font-medium">
+            <i class="fas fa-award w-5 text-center text-[#FFCA28]"></i>
+            <span>3. ผลงานโดดเด่น</span>
+          </button>
+
+          <!-- 4. ผลงานวิชาการ -->
+          <button data-tab="academic" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 text-xs text-left font-medium">
+            <i class="fas fa-book-open w-5 text-center text-[#26A69A]"></i>
+            <span>4. ผลงานวิชาการ</span>
+          </button>
+
+          <!-- 5. ผลงานบทความวิจัย -->
+          <button data-tab="research" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 text-xs text-left font-medium">
+            <i class="fas fa-flask w-5 text-center text-[#4A2C6D]"></i>
+            <span>5. ผลงานบทความวิจัย</span>
+          </button>
+
+          <!-- 6. งานวิทยากร -->
+          <button data-tab="speaker" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 text-xs text-left font-medium">
+            <i class="fas fa-microphone-alt w-5 text-center text-[#F57C00]"></i>
+            <span>6. งานวิทยากร</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Quick Contact Box in Sidebar -->
+      <div class="mt-5 p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 text-xs">
+        <div class="flex items-center space-x-2 text-emerald-800 font-bold mb-1">
+          <i class="fas fa-headset text-[#3BB489]"></i>
+          <span>ช่องทางติดต่อด่วน</span>
+        </div>
+        <p class="text-slate-600 text-[11px] mb-2">โทร: 061-041-3872</p>
+        <a href="mailto:Maneekranboonjong@gmail.com" class="block text-center py-1.5 px-3 bg-[#3BB489] text-white rounded-lg font-semibold hover:bg-[#26A69A] transition-colors text-[11px]">
+          ส่งอีเมลติดต่อ
+        </a>
+      </div>
+    </aside>
+
+    <!-- ====================================================================
+         CONTENT VIEWPORT (7 TAB MODULES)
+         ==================================================================== -->
+    <main class="flex-1 min-w-0 pb-20 lg:pb-6">
+
+      <!-- ================================================================
+           TAB 7: DASHBOARD รายงานผลงาน (DEFAULT)
+           ================================================================ -->
+      <section id="tab-dashboard" class="tab-content">
+        <!-- Hero Header -->
+        <div class="relative bg-gradient-to-r from-white via-emerald-50/40 to-teal-50/40 p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-sm mb-6 overflow-hidden">
+          <div class="absolute -right-10 -bottom-10 w-64 h-64 rounded-full bg-gradient-to-br from-[#76C58C]/20 to-[#3BB489]/10 filter blur-2xl"></div>
+          
+          <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div class="max-w-2xl">
+              <div class="inline-flex items-center px-3 py-1 rounded-full bg-emerald-100/80 text-emerald-800 text-xs font-semibold mb-3">
+                <i class="fas fa-sparkles text-[#3BB489] mr-1.5"></i> สรุปภาพรวมสมรรถนะและรายงานผลงาน
+              </div>
+              <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-800 mb-2">
+                สวัสดีครับ, ยินดีต้อนรับสู่แดชบอร์ดผลงาน
+              </h2>
+              <p class="text-slate-600 text-xs sm:text-sm leading-relaxed">
+                รายงานผลการดำเนินงานทางวิชาการ การวิจัย การเป็นวิทยากร และกิจกรรมแลกเปลี่ยนระดับนานาชาติของคุณ <strong>มณีกรานต์ บุญจง</strong> นักศึกษาบริหารธุรกิจระหว่างประเทศ มหาวิทยาลัยเทคโนโลยีราชมงคลธัญบุรี
+              </p>
+            </div>
+
+            <div class="flex flex-wrap gap-2 flex-shrink-0">
+              <button class="open-resume-modal px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 shadow-xs inline-flex items-center">
+                <i class="fas fa-external-link-alt mr-1.5 text-[#3BB489]"></i> เรซูเม่ฉบับเต็ม
+              </button>
+              <button data-tab="contact" class="px-4 py-2.5 rounded-xl bg-[#3BB489] text-white text-xs font-semibold hover:bg-[#26A69A] shadow-md shadow-emerald-500/20 inline-flex items-center">
+                <i class="fas fa-paper-plane mr-1.5"></i> ติดต่อร่วมงาน
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI Metric Cards Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm card-hover">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-slate-400">งานวิชาการ & วิจัย</span>
+              <div class="w-8 h-8 rounded-lg bg-emerald-50 text-[#3BB489] flex items-center justify-center">
+                <i class="fas fa-book text-xs"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline space-x-1">
+              <span id="kpi-academic" class="text-2xl font-extrabold text-slate-800">4</span>
+              <span class="text-xs text-slate-400">เรื่อง</span>
+            </div>
+            <p class="text-[11px] text-emerald-600 font-medium mt-1">บทความวิจัย 3 เรื่อง</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm card-hover">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-slate-400">งานวิทยากร</span>
+              <div class="w-8 h-8 rounded-lg bg-blue-50 text-[#0288D1] flex items-center justify-center">
+                <i class="fas fa-microphone-alt text-xs"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline space-x-1">
+              <span id="kpi-speaker-events" class="text-2xl font-extrabold text-slate-800">4</span>
+              <span class="text-xs text-slate-400">ครั้ง</span>
+            </div>
+            <p id="kpi-speaker-hours" class="text-[11px] text-blue-600 font-medium mt-1">12.5 ชม.</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm card-hover">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-slate-400">ผู้เข้าร่วมฟัง</span>
+              <div class="w-8 h-8 rounded-lg bg-amber-50 text-[#FFCA28] flex items-center justify-center">
+                <i class="fas fa-users text-xs"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline space-x-1">
+              <span id="kpi-attendees" class="text-2xl font-extrabold text-slate-800">545+</span>
+              <span class="text-xs text-slate-400">คน</span>
+            </div>
+            <p class="text-[11px] text-amber-600 font-medium mt-1">ความพึงพอใจ 98.4%</p>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm card-hover">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-slate-400">ผลงานโดดเด่น</span>
+              <div class="w-8 h-8 rounded-lg bg-purple-50 text-[#4A2C6D] flex items-center justify-center">
+                <i class="fas fa-trophy text-xs"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline space-x-1">
+              <span id="kpi-achievements" class="text-2xl font-extrabold text-slate-800">6</span>
+              <span class="text-xs text-slate-400">รางวัล</span>
+            </div>
+            <p class="text-[11px] text-purple-600 font-medium mt-1">ระดับนานาชาติ & องค์กร</p>
+          </div>
+        </div>
+
+        <!-- <div> <canvas> </canvas> </div> Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          
+          <!-- Chart 1: สัดส่วนประเภทผลงาน -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="text-sm font-bold text-slate-800">สัดส่วนประเภทผลงานและกิจกรรม</h3>
+                <p class="text-[11px] text-slate-400">จำแนกตามหมวดหมู่ผลงานทั้งหมดในระบบ</p>
+              </div>
+              <span class="badge-mint px-2.5 py-1 rounded-full text-xs font-semibold">Total: 20 รายการ</span>
+            </div>
+            <div class="h-64 relative flex items-center justify-center">
+              <canvas id="chartCategory"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 2: สถิติรายปี -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="text-sm font-bold text-slate-800">สถิติการผลิตผลงานสะสมรายปี</h3>
+                <p class="text-[11px] text-slate-400">เปรียบเทียบผลงานวิชาการ กิจกรรม และรางวัล (2565 - 2569)</p>
+              </div>
+              <span class="badge-sage px-2.5 py-1 rounded-full text-xs font-semibold">ปี 2565 - 2569</span>
+            </div>
+            <div class="h-64 relative">
+              <canvas id="chartTimeline"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 3: แผนผังทักษะสมรรถนะ (Radar) -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="text-sm font-bold text-slate-800">แผนผังประเมินสมรรถนะรอบด้าน (Core Competencies)</h3>
+                <p class="text-[11px] text-slate-400">ทักษะทางวิชาชีพ การค้าระหว่างประเทศ และการสื่อสาร</p>
+              </div>
+              <span class="badge-purple px-2.5 py-1 rounded-full text-xs font-semibold">7 มิติสมรรถนะ</span>
+            </div>
+            <div class="h-64 relative">
+              <canvas id="chartRadar"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 4: ผู้ฟังบรรยายจำแนกตามงาน -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="text-sm font-bold text-slate-800">สถิติผู้เข้าร่วมรับฟังการบรรยายพิเศษ</h3>
+                <p class="text-[11px] text-slate-400">จำนวนกลุ่มเป้าหมายในแต่ละโครงการวิทยากร</p>
+              </div>
+              <span class="badge-blue px-2.5 py-1 rounded-full text-xs font-semibold">รวม 545 คน</span>
+            </div>
+            <div class="h-64 relative">
+              <canvas id="chartSpeaker"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Experience & Key Skills Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Work Experience Highlight -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-bold text-slate-800">
+                <i class="fas fa-briefcase text-[#3BB489] mr-2"></i> ประสบการณ์การทำงานจริง (Work Experience)
+              </h3>
+              <span class="badge-mint px-2.5 py-0.5 rounded-full text-xs font-semibold">ธ.ค. 2568 - เม.ย. 2569</span>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-3">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-slate-800 text-sm">บริษัท NANO CALIBRATION CO., LTD</h4>
+                <span class="text-xs text-[#26A69A] font-semibold">Telesales Representatives</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-1">บริการสอบเทียบเครื่องมือวัดอุตสาหกรรมในเขตโรงงานนิคมอุตสาหกรรม</p>
+            </div>
+            <ul class="space-y-2 text-xs text-slate-600">
+              <li class="flex items-start">
+                <i class="fas fa-check-circle text-[#3BB489] mt-0.5 mr-2"></i>
+                <span>ฝึกงานในตำแหน่ง Telesales representatives ติดต่อประสานงานลูกค้าโรงงานอุตสาหกรรม</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-check-circle text-[#3BB489] mt-0.5 mr-2"></i>
+                <span>จัดทำใบเสนอราคา (Quotation) คำนวณค่าบริการและเงื่อนไขการค้าอย่างรวดเร็วแม่นยำ</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-check-circle text-[#3BB489] mt-0.5 mr-2"></i>
+                <span>ออกรอบรับเครื่องมือวัดเพื่อส่งซ่อมและสอบเทียบตามเขตนิคมอุตสาหกรรมโรงงาน</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Language & Core Strengths -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <h3 class="text-sm font-bold text-slate-800 mb-4">
+              <i class="fas fa-language text-[#0288D1] mr-2"></i> ทักษะทางภาษาและคอมพิวเตอร์
+            </h3>
+            
+            <div class="space-y-3">
+              <div>
+                <div class="flex justify-between text-xs font-semibold mb-1">
+                  <span>ภาษาไทย (Thai Language)</span>
+                  <span class="text-emerald-600">ดีมาก (Native)</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div class="bg-[#3BB489] h-full rounded-full" style="width: 100%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-semibold mb-1">
+                  <span>ภาษาอังกฤษ (English Language)</span>
+                  <span class="text-blue-600">ดี (Good / Working Proficiency)</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div class="bg-[#0288D1] h-full rounded-full" style="width: 85%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-semibold mb-1">
+                  <span>ภาษาจีน (Business Mandarin)</span>
+                  <span class="text-purple-600">ค่ายวิชาการ Guangxi University</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div class="bg-[#4A2C6D] h-full rounded-full" style="width: 72%"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-semibold mb-1">
+                  <span>โปรแกรมสำนักงาน (Microsoft Office & Excel)</span>
+                  <span class="text-amber-600">ชำนาญ & คณิตคิดเร็ว</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div class="bg-[#FFCA28] h-full rounded-full" style="width: 90%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           TAB 1: ประวัติการศึกษา (EDUCATION HISTORY)
+           ================================================================ -->
+      <section id="tab-edu" class="tab-content">
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-sm mb-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+            <div>
+              <div class="inline-flex items-center px-3 py-1 rounded-full badge-blue text-xs font-semibold mb-2">
+                <i class="fas fa-graduation-cap mr-1.5"></i> เมนูที่ 1
+              </div>
+              <h2 class="text-2xl font-extrabold text-slate-800">ประวัติการศึกษา (Education History)</h2>
+              <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                เส้นทางการศึกษาตั้งแต่ระดับมัธยมศึกษาตอนปลายสายวิทยาศาสตร์-คณิตศาสตร์ จนถึงระดับปริญญาตรีและโครงการแลกเปลี่ยนต่างประเทศ
+              </p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="badge-mint px-3 py-1 rounded-full text-xs font-bold">RMUTT International</span>
+              <span class="badge-purple px-3 py-1 rounded-full text-xs font-bold">Guangxi China</span>
+            </div>
+          </div>
+
+          <!-- Timeline Container -->
+          <div class="mt-8" id="education-timeline-container">
+            <!-- Rendered by app.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           TAB 2: สถานที่ติดต่อ (CONTACT & LOCATION)
+           ================================================================ -->
+      <section id="tab-contact" class="tab-content">
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-sm mb-6">
+          <div class="pb-6 border-b border-slate-100 mb-6">
+            <div class="inline-flex items-center px-3 py-1 rounded-full badge-red text-xs font-semibold mb-2">
+              <i class="fas fa-map-marker-alt mr-1.5"></i> เมนูที่ 2
+            </div>
+            <h2 class="text-2xl font-extrabold text-slate-800">สถานที่ติดต่อ (Contact Details & Location)</h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">
+              ช่องทางการติดต่อ ข้อมูลที่อยู่ และแผนที่สำหรับติดต่องาน ประสานงานวิชาการ หรือโอกาสร่วมงาน
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Left Column: Contact Cards -->
+            <div class="lg:col-span-5 space-y-4">
+              <!-- Address Card -->
+              <div class="p-5 rounded-2xl bg-slate-50 border border-slate-100">
+                <div class="flex items-start space-x-3">
+                  <div class="w-10 h-10 rounded-xl bg-red-50 text-[#EF5350] flex items-center justify-center flex-shrink-0 mt-1">
+                    <i class="fas fa-home text-base"></i>
+                  </div>
+                  <div>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">ที่อยู่ปัจจุบัน</h3>
+                    <p class="text-sm font-bold text-slate-800 mt-0.5">เขตสายไหม กรุงเทพมหานคร</p>
+                    <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                      88/14 หมู่บ้านศุภาลัย การ์เด้นวิลล์ ซอยพหลโยธิน 54/1 แยกสายไหม แขวงคลองถนน เขตสายไหม กรุงเทพมหานคร 10220
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Phone & Email -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <a href="tel:0610413872" class="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-100 hover:bg-emerald-50 transition-colors block">
+                  <div class="w-8 h-8 rounded-lg bg-[#3BB489] text-white flex items-center justify-center mb-2">
+                    <i class="fas fa-phone-alt text-xs"></i>
+                  </div>
+                  <span class="text-[11px] text-slate-400 font-bold block">เบอร์โทรศัพท์</span>
+                  <span class="text-sm font-extrabold text-slate-800">061-041-3872</span>
+                </a>
+
+                <a href="mailto:Maneekranboonjong@gmail.com" class="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 hover:bg-blue-50 transition-colors block">
+                  <div class="w-8 h-8 rounded-lg bg-[#0288D1] text-white flex items-center justify-center mb-2">
+                    <i class="fas fa-envelope text-xs"></i>
+                  </div>
+                  <span class="text-[11px] text-slate-400 font-bold block">อีเมล</span>
+                  <span class="text-xs font-extrabold text-slate-800 truncate block">Maneekranboonjong@gmail.com</span>
+                </a>
+              </div>
+
+              <!-- Interactive Contact Message Form -->
+              <div class="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs">
+                <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center">
+                  <i class="fas fa-paper-plane text-[#3BB489] mr-2"></i> ส่งข้อความถึงคุณมณีกรานต์
+                </h3>
+                <form id="contact-form" class="space-y-3">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อผู้ติดต่อ / หน่วยงาน</label>
+                    <input type="text" id="contact-name" required placeholder="ระบุชื่อหรือองค์กรของคุณ" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#3BB489] focus:ring-1 focus:ring-[#3BB489]">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">อีเมลติดต่อกลับ</label>
+                    <input type="email" id="contact-email" required placeholder="example@domain.com" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#3BB489] focus:ring-1 focus:ring-[#3BB489]">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ข้อความ / รายละเอียดงาน</label>
+                    <textarea id="contact-message" rows="3" required placeholder="ระบุรายละเอียดหัวข้อหรือโอกาสร่วมงาน..." class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#3BB489] focus:ring-1 focus:ring-[#3BB489]"></textarea>
+                  </div>
+                  <button type="submit" class="w-full py-2.5 rounded-xl bg-[#3BB489] text-white font-semibold text-xs hover:bg-[#26A69A] shadow-md shadow-emerald-500/20 transition-all flex items-center justify-center">
+                    <i class="fas fa-paper-plane mr-2"></i> ส่งข้อความ (Send Message)
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Right Column: Interactive Map -->
+            <div class="lg:col-span-7 flex flex-col">
+              <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex-1 flex flex-col min-h-[400px]">
+                <div class="flex items-center justify-between px-2 py-1 mb-2">
+                  <span class="text-xs font-bold text-slate-700">
+                    <i class="fas fa-map-marked-alt text-[#EF5350] mr-1.5"></i> แผนที่ทำเลที่ตั้ง (เขตสายไหม กรุงเทพฯ)
+                  </span>
+                  <span class="text-[11px] text-slate-400">Google Maps Interactive</span>
+                </div>
+                <div class="flex-1 rounded-xl overflow-hidden border border-slate-200 shadow-inner relative">
+                  <iframe 
+                    title="Location Map"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d61972.33923485474!2d100.6402434!3d13.9188047!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x311d7c35f2991823%3A0x10100b25de24820!2z4LmA4LiC4LiV4Liq4Liy4Lii4LmE4Lir4LihIOC4g-C4o-C4uOC4h-C5gOC4l-4Lie4Lih4Lir4Liy4LiZ4LiE4Lij!5e0!3m2!1sth!2sth!4v1710830000000!5m2!1sth!2sth" 
+                    width="100%" 
+                    height="100%" 
+                    style="border:0; min-height: 380px;" 
+                    allowfullscreen="" 
+                    loading="lazy">
+                  </iframe>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           TAB 3: ผลงานโดดเด่น (OUTSTANDING ACHIEVEMENTS)
+           ================================================================ -->
+      <section id="tab-achievements" class="tab-content">
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-sm mb-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+            <div>
+              <div class="inline-flex items-center px-3 py-1 rounded-full badge-yellow text-xs font-semibold mb-2">
+                <i class="fas fa-award mr-1.5"></i> เมนูที่ 3
+              </div>
+              <h2 class="text-2xl font-extrabold text-slate-800">ผลงานโดดเด่น (Outstanding Achievements)</h2>
+              <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                รวมรางวัล ผลงานเกียรติยศ วุฒิบัตรวิชาชีพ และบทบาทสำคัญในระดับนานาชาติและองค์กรธุรกิจ
+              </p>
+            </div>
+
+            <!-- Filters -->
+            <div class="flex items-center space-x-1.5 bg-slate-100 p-1 rounded-xl flex-wrap">
+              <button data-achieve-filter="all" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#3BB489] text-white transition-all shadow-xs">
+                ทั้งหมด
+              </button>
+              <button data-achieve-filter="นานาชาติ" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 hover:bg-slate-200 transition-all">
+                นานาชาติ
+              </button>
+              <button data-achieve-filter="องค์กร" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 hover:bg-slate-200 transition-all">
+                องค์กรธุรกิจ
+              </button>
+              <button data-achieve-filter="การแข่งขัน" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-slate-700 hover:bg-slate-200 transition-all">
+                การแข่งขัน
+              </button>
+            </div>
+          </div>
+
+          <!-- Achievements Cards Grid -->
+          <div id="achievements-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-6">
+            <!-- Rendered by app.js -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           TAB 4: ผลงานวิชาการ (ACADEMIC WORKS) - TABLE OVERFLOW
+           ================================================================ -->
+      <section id="tab-academic" class="tab-content">
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-sm mb-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+            <div>
+              <div class="inline-flex items-center px-3 py-1 rounded-full badge-teal text-xs font-semibold mb-2">
+                <i class="fas fa-book-open mr-1.5"></i> เมนูที่ 4
+              </div>
+              <h2 class="text-2xl font-extrabold text-slate-800">ผลงานวิชาการ (Academic Works)</h2>
+              <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                โครงงานวิชาการ แผนธุรกิจระหว่างประเทศ และรายงานการวิเคราะห์ตลาดข้ามพรมแดน RCEP & ASEAN-China
+              </p>
+            </div>
+
+            <!-- Search input -->
+            <div class="relative w-full sm:w-64">
+              <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+              <input type="text" id="academic-search" placeholder="ค้นหาชื่อโครงงาน, อาจารย์..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-[#3BB489] focus:ring-1 focus:ring-[#3BB489]">
+            </div>
+          </div>
+
+          <!-- Table Container with Table Overflow (overflow-x-auto) -->
+          <div class="mt-6 border border-slate-100 rounded-2xl overflow-hidden shadow-xs">
+            <div class="table-responsive">
+              <table class="w-full text-left">
+                <thead>
+                  <tr class="border-b border-slate-200 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                    <th class="px-5 py-3.5 text-center w-14">ลำดับ</th>
+                    <th class="px-5 py-3.5 w-20">ปี</th>
+                    <th class="px-5 py-3.5">ชื่อผลงาน / โครงงานวิชาการ</th>
+                    <th class="px-5 py-3.5">ประเภท</th>
+                    <th class="px-5 py-3.5">อาจารย์ที่ปรึกษา</th>
+                    <th class="px-5 py-3.5 text-center w-28">รายละเอียด</th>
+                  </tr>
+                </thead>
+                <tbody id="academic-table-body" class="divide-y divide-slate-100">
+                  <!-- Rendered by app.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           TAB 5: ผลงานบทความวิจัย (RESEARCH ARTICLES) - TABLE OVERFLOW
+           ================================================================ -->
+      <section id="tab-research" class="tab-content">
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-sm mb-6">
+          <div class="pb-6 border-b border-slate-100 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="inline-flex items-center px-3 py-1 rounded-full badge-purple text-xs font-semibold mb-2">
+                <i class="fas fa-flask mr-1.5"></i> เมนูที่ 5
+              </div>
+              <h2 class="text-2xl font-extrabold text-slate-800">ผลงานบทความวิจัย (Research Articles)</h2>
+              <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                บทความวิจัยที่ได้รับการตีพิมพ์ในวารสารวิชาการระดับชาติ (TCI) และรายงานสืบเนื่องจากการประชุมวิชาการ (Proceedings)
+              </p>
+            </div>
+
+            <div class="flex items-center space-x-2">
+              <span class="badge-mint px-3 py-1 rounded-full text-xs font-semibold">TCI Group 1</span>
+              <span class="badge-blue px-3 py-1 rounded-full text-xs font-semibold">Scopus Proceeding</span>
+            </div>
+          </div>
+
+          <!-- Research Table with Table Overflow -->
+          <div class="border border-slate-100 rounded-2xl overflow-hidden shadow-xs">
+            <div class="table-responsive">
+              <table class="w-full text-left">
+                <thead>
+                  <tr class="border-b border-slate-200 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                    <th class="px-5 py-3.5 text-center w-14">ลำดับ</th>
+                    <th class="px-5 py-3.5 w-20">ปี</th>
+                    <th class="px-5 py-3.5">ชื่อบทความวิจัย & คณะผู้เขียน</th>
+                    <th class="px-5 py-3.5">วารสาร / แหล่งตีพิมพ์</th>
+                    <th class="px-5 py-3.5">สถานะ & DOI</th>
+                    <th class="px-5 py-3.5 text-center w-28">เอกสาร</th>
+                  </tr>
+                </thead>
+                <tbody id="research-table-body" class="divide-y divide-slate-100">
+                  <!-- Rendered by app.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           TAB 6: งานวิทยากร (SPEAKER ENGAGEMENTS)
+           ================================================================ -->
+      <section id="tab-speaker" class="tab-content">
+        <div class="bg-white p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-sm mb-6">
+          <div class="pb-6 border-b border-slate-100 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="inline-flex items-center px-3 py-1 rounded-full badge-orange text-xs font-semibold mb-2">
+                <i class="fas fa-microphone-alt mr-1.5"></i> เมนูที่ 6
+              </div>
+              <h2 class="text-2xl font-extrabold text-slate-800">งานวิทยากร (Speaker Engagements)</h2>
+              <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                การบรรยายพิเศษ การแบ่งปันประสบการณ์การศึกษาแลกเปลี่ยน ณ Guangxi University และทักษะงานขาย B2B Telesales
+              </p>
+            </div>
+
+            <div class="flex items-center space-x-2">
+              <span class="badge-mint px-3 py-1 rounded-full text-xs font-bold">รวม 4 กิจกรรม</span>
+              <span class="badge-orange px-3 py-1 rounded-full text-xs font-bold">12.5 ชั่วโมงบรรยาย</span>
+            </div>
+          </div>
+
+          <!-- Featured Speaker Cards -->
+          <div id="speaker-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+            <!-- Rendered by app.js -->
+          </div>
+
+          <!-- Speaker Log Table with Table Overflow -->
+          <h3 class="text-base font-bold text-slate-800 mb-3 flex items-center">
+            <i class="fas fa-list-alt text-[#F57C00] mr-2"></i> บันทึกประวัติการบรรยายฉบับละเอียด (Detailed Speaker Logs)
+          </h3>
+          <div class="border border-slate-100 rounded-2xl overflow-hidden shadow-xs">
+            <div class="table-responsive">
+              <table class="w-full text-left">
+                <thead>
+                  <tr class="border-b border-slate-200 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                    <th class="px-5 py-3.5 text-center w-14">ลำดับ</th>
+                    <th class="px-5 py-3.5 w-28">วันที่</th>
+                    <th class="px-5 py-3.5">หัวข้อการบรรยาย & ผู้จัด</th>
+                    <th class="px-5 py-3.5">กลุ่มเป้าหมาย</th>
+                    <th class="px-5 py-3.5 text-center w-24">จำนวนคน</th>
+                    <th class="px-5 py-3.5 text-center w-24">เวลา</th>
+                  </tr>
+                </thead>
+                <tbody id="speaker-table-body" class="divide-y divide-slate-100">
+                  <!-- Rendered by app.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ========================================================================
+       MOBILE BOTTOM NAVIGATION (APP BAR)
+       ======================================================================== -->
+  <div class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-2 py-1.5 flex justify-around items-center z-40 shadow-lg no-print">
+    <button data-tab="dashboard" class="mobile-nav-btn flex flex-col items-center p-1 text-[#3BB489] font-bold">
+      <i class="fas fa-chart-pie text-base mb-0.5"></i>
+      <span class="text-[10px]">แดชบอร์ด</span>
+    </button>
+    <button data-tab="edu" class="mobile-nav-btn flex flex-col items-center p-1 text-slate-500">
+      <i class="fas fa-graduation-cap text-base mb-0.5"></i>
+      <span class="text-[10px]">การศึกษา</span>
+    </button>
+    <button data-tab="achievements" class="mobile-nav-btn flex flex-col items-center p-1 text-slate-500">
+      <i class="fas fa-award text-base mb-0.5"></i>
+      <span class="text-[10px]">ผลงานเด่น</span>
+    </button>
+    <button data-tab="academic" class="mobile-nav-btn flex flex-col items-center p-1 text-slate-500">
+      <i class="fas fa-book-open text-base mb-0.5"></i>
+      <span class="text-[10px]">วิชาการ</span>
+    </button>
+    <button data-tab="contact" class="mobile-nav-btn flex flex-col items-center p-1 text-slate-500">
+      <i class="fas fa-map-marker-alt text-base mb-0.5"></i>
+      <span class="text-[10px]">ติดต่อ</span>
+    </button>
+  </div>
+
+  <!-- ========================================================================
+       FOOTER (FLUID WIDTH, LIGHT GRAY BG, SYSTEM DEV INFO)
+       ======================================================================== -->
+  <footer class="w-full bg-slate-100 border-t border-slate-200 text-slate-600 py-8 px-4 sm:px-6 lg:px-8 mt-auto no-print">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+      <!-- Left Info -->
+      <div class="space-y-1">
+        <p class="text-sm font-bold text-slate-800">
+          ระบบเว็บส่วนบุคคล พัฒนาโดย มณีกรานต์ บุญจง
+        </p>
+        <p class="text-xs text-slate-500">
+          Personal Portfolio & Performance Reporting Information System &bull; Version 2.4.0
+        </p>
+      </div>
+
+      <!-- Center Badges -->
+      <div class="flex items-center space-x-2">
+        <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white border border-slate-200 text-slate-600">
+          <i class="fas fa-shield-alt text-[#3BB489] mr-1"></i> Verified Dossier
+        </span>
+        <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white border border-slate-200 text-slate-600">
+          <i class="fas fa-palette text-[#76C58C] mr-1"></i> Modern Pastel UI
+        </span>
+      </div>
+
+      <!-- Right Copyright -->
+      <div class="text-xs text-slate-400">
+        &copy; 2026 มณีกรานต์ บุญจง. สงวนลิขสิทธิ์ทุกประการ.
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================
+       MODAL 1: VIEW ORIGINAL RESUME (FULL HD)
+       ======================================================================== -->
+  <div id="modal-resume" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-3xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl animate-scaleUp">
+      <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div class="flex items-center space-x-2">
+          <i class="far fa-file-image text-[#3BB489] text-lg"></i>
+          <h3 class="font-bold text-slate-800 text-sm sm:text-base">เอกสารเรซูเม่ต้นฉบับ (Original Resume File)</h3>
+        </div>
+        <div class="flex items-center space-x-2">
+          <a href="assets/images/resume_original.jpg" download="Resume_Maneekran_Boonjong.jpg" class="px-3 py-1.5 rounded-lg bg-emerald-50 text-[#3BB489] hover:bg-[#3BB489] hover:text-white transition-all text-xs font-semibold">
+            <i class="fas fa-download mr-1"></i> ดาวน์โหลดรูปภาพ
+          </a>
+          <button data-modal-close="modal-resume" class="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-600">
+            <i class="fas fa-times text-xs"></i>
+          </button>
+        </div>
+      </div>
+      <div class="p-4 overflow-y-auto flex-1 text-center bg-slate-100">
+        <img src="assets/images/resume_original.jpg" alt="เรซูเม่ต้นฉบับ" class="max-w-full h-auto mx-auto rounded-xl shadow-lg border border-slate-200">
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 2: GENERIC DETAIL VIEWER (ACADEMIC, RESEARCH, ACHIEVEMENTS)
+       ======================================================================== -->
+  <div id="modal-generic" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-lg w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+      <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <h3 id="modal-generic-title" class="font-bold text-slate-800 text-sm">รายละเอียด</h3>
+        <button data-modal-close="modal-generic" class="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center text-slate-600">
+          <i class="fas fa-times text-xs"></i>
+        </button>
+      </div>
+      <div id="modal-generic-body" class="p-6 overflow-y-auto flex-1">
+        <!-- Injected via JavaScript -->
+      </div>
+      <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+        <button data-modal-close="modal-generic" class="px-5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold">
+          ปิดหน้าต่าง
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- External Libraries: Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Application Logic -->
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/charts.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
